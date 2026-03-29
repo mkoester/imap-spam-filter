@@ -1,0 +1,32 @@
+IMAPAccount domain
+Host imap.mailserver.com
+Port 993
+User user@domain.tld
+PassCmd "cat /mnt/data/spamfilter/config/mbsync/mailpass"
+TLSType IMAPS
+AuthMechs LOGIN
+
+IMAPStore domain-remote
+Account domain
+
+MaildirStore domain-local
+Path /mnt/data/spamfilter/mail/domain/
+Inbox /mnt/data/spamfilter/mail/domain/INBOX
+
+Channel domain-inbox
+Far :domain-remote:INBOX
+Near :domain-local:INBOX
+Create Both
+Expunge Both
+SyncState *
+
+Channel domain-junk
+Far :domain-remote:Junk
+Near :domain-local:Junk
+Create Both
+Expunge Both
+SyncState *
+
+Group domain
+Channel domain-inbox
+Channel domain-junk
