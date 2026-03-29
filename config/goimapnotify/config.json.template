@@ -1,0 +1,19 @@
+{
+  "configurations": [
+    {
+      "host": "${IMAP_HOST}",
+      "port": ${IMAP_PORT},
+      "tls": true,
+      "username": "${IMAP_USER}",
+      "passwordCMD": "${IMAP_PASS_CMD}",
+      "idleLogoutTimeout": 5,
+      "boxes": [
+        {
+          "mailbox": "${INBOX_FOLDER}",
+          "onNewMail": "flock -n /tmp/imap-spam-filter-${ACCOUNT_NAME}.lock -c 'mbsync -c ${REPO_DIR}/config/mbsync/mbsyncrc ${ACCOUNT_NAME}-inbox && ${REPO_DIR}/bin/classify-mail.sh'",
+          "onNewMailPost": ""
+        }
+      ]
+    }
+  ]
+}

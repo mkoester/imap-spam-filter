@@ -1,0 +1,5 @@
+config.env
+config/mbsync/mbsyncrc
+config/goimapnotify/config.json
+systemd/*.service
+systemd/*.timer

@@ -1,10 +1,24 @@
 #!/bin/bash
 set -uo pipefail
 
-MAILDIR=/mnt/data/spamfilter/mail/domain/INBOX
-STATEFILE=/mnt/data/spamfilter/state/mailfilter/processed
-BOGOFILTER_DIR=/mnt/data/spamfilter/state/bogofilter
-SPAMQUEUE=/mnt/data/spamfilter/state/mailfilter/spam-queue
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONFIG_ENV="$REPO_DIR/config.env"
+
+if [ ! -f "$CONFIG_ENV" ]; then
+    echo "Error: $CONFIG_ENV not found. Run setup.sh first." >&2
+    exit 1
+fi
+
+set -a
+# shellcheck source=/dev/null
+source "$CONFIG_ENV"
+set +a
+
+MAILDIR="$DATA_DIR/mail/$ACCOUNT_NAME/$INBOX_FOLDER"
+STATEFILE="$DATA_DIR/state/mailfilter/processed"
+BOGOFILTER_DIR="$DATA_DIR/state/bogofilter"
+SPAMQUEUE="$DATA_DIR/state/mailfilter/spam-queue"
+IMAPFILTER_CONFIG="$REPO_DIR/config/imapfilter/move-spam.lua"
 
 mkdir -p "$(dirname "$STATEFILE")"
 touch "$STATEFILE"
@@ -30,5 +44,5 @@ done
 
 # If there's anything in the spam queue, run imapfilter to move it
 if [ -s "$SPAMQUEUE" ]; then
-    imapfilter -c /mnt/data/spamfilter/config/imapfilter/move-spam.lua
+    imapfilter -c "$IMAPFILTER_CONFIG" 2>&1 | systemd-cat -t imapfilter
 fi

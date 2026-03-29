@@ -1,0 +1,8 @@
+[Unit]
+Description=Bogofilter incremental spam learning
+
+[Service]
+Type=oneshot
+ExecStart=${REPO_DIR}/bin/bogofilter-learn.sh
+StandardOutput=journal
+StandardError=journal

@@ -1,15 +1,30 @@
 #!/bin/bash
 set -uo pipefail
 
-INBOX=/mnt/data/spamfilter/mail/domain/INBOX
-JUNK=/mnt/data/spamfilter/mail/domain/Junk
-LEARNDB=/mnt/data/spamfilter/state/mailfilter/learned
-BOGOFILTER_DIR=/mnt/data/spamfilter/state/bogofilter
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONFIG_ENV="$REPO_DIR/config.env"
+
+if [ ! -f "$CONFIG_ENV" ]; then
+    echo "Error: $CONFIG_ENV not found. Run setup.sh first." >&2
+    exit 1
+fi
+
+set -a
+# shellcheck source=/dev/null
+source "$CONFIG_ENV"
+set +a
+
+MAIL_DIR="$DATA_DIR/mail/$ACCOUNT_NAME"
+INBOX="$MAIL_DIR/$INBOX_FOLDER"
+JUNK="$MAIL_DIR/$JUNK_FOLDER"
+LEARNDB="$DATA_DIR/state/mailfilter/learned"
+BOGOFILTER_DIR="$DATA_DIR/state/bogofilter"
+MBSYNC_CONFIG="$REPO_DIR/config/mbsync/mbsyncrc"
 
 mkdir -p "$(dirname "$LEARNDB")"
 touch "$LEARNDB"
 
-mbsync -c /mnt/data/spamfilter/config/mbsync/mbsyncrc domain
+mbsync -c "$MBSYNC_CONFIG" "$ACCOUNT_NAME"
 
 learn() {
     local dir="$1"

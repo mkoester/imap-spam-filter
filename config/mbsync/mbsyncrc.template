@@ -1,0 +1,32 @@
+IMAPAccount ${ACCOUNT_NAME}
+Host ${IMAP_HOST}
+Port ${IMAP_PORT}
+User ${IMAP_USER}
+PassCmd "${IMAP_PASS_CMD}"
+TLSType IMAPS
+AuthMechs LOGIN
+
+IMAPStore ${ACCOUNT_NAME}-remote
+Account ${ACCOUNT_NAME}
+
+MaildirStore ${ACCOUNT_NAME}-local
+Path ${DATA_DIR}/mail/${ACCOUNT_NAME}/
+Inbox ${DATA_DIR}/mail/${ACCOUNT_NAME}/${INBOX_FOLDER}
+
+Channel ${ACCOUNT_NAME}-inbox
+Far :${ACCOUNT_NAME}-remote:${INBOX_FOLDER}
+Near :${ACCOUNT_NAME}-local:${INBOX_FOLDER}
+Create Both
+Expunge Both
+SyncState *
+
+Channel ${ACCOUNT_NAME}-junk
+Far :${ACCOUNT_NAME}-remote:${JUNK_FOLDER}
+Near :${ACCOUNT_NAME}-local:${JUNK_FOLDER}
+Create Both
+Expunge Both
+SyncState *
+
+Group ${ACCOUNT_NAME}
+Channel ${ACCOUNT_NAME}-inbox
+Channel ${ACCOUNT_NAME}-junk
