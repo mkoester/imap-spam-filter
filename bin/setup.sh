@@ -20,6 +20,13 @@ set +a
 
 export REPO_DIR
 
+GOIMAPNOTIFY_BIN="$(command -v goimapnotify 2>/dev/null || true)"
+if [ -z "$GOIMAPNOTIFY_BIN" ]; then
+    echo "Error: goimapnotify not found in PATH. Install it first (see README.md)." >&2
+    exit 1
+fi
+export GOIMAPNOTIFY_BIN
+
 echo "Creating data directories..."
 mkdir -p \
     "$DATA_DIR/mail/$ACCOUNT_NAME" \

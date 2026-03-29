@@ -22,31 +22,45 @@ processing via IMAP IDLE.
 
 ## Prerequisites
 
-### Install packages (Fedora)
+`setup.sh` auto-detects the `goimapnotify` binary via `PATH`, so install it
+by whichever method suits your distribution before running setup.
+
+### Fedora
 
 ```bash
 sudo dnf install isync imapfilter bogofilter gettext
 ```
 
-- `isync` provides the `mbsync` binary
-- `gettext` provides `envsubst`, used by the setup script
-
-### Install goimapnotify
-
-goimapnotify is not in the Fedora repos. Install it via Go:
+goimapnotify is not in the Fedora repos — install it via Go:
 
 ```bash
-# Requires Go — install with: sudo dnf install golang
-go install gitlab.com/shackra/goimapnotify@latest
+sudo dnf install golang
+go install gitlab.com/shackra/goimapnotify/cmd/goimapnotify@latest
 ```
 
-The binary will be at `~/go/bin/goimapnotify`. Make sure `~/go/bin` is in your
-`PATH` (add `export PATH="$HOME/go/bin:$PATH"` to your `~/.bashrc` or
-`~/.zshrc`).
+The binary lands in `~/go/bin/`. Make sure that is in your `PATH`.
 
-Alternatively, download a pre-built binary from the
-[releases page](https://gitlab.com/shackra/goimapnotify/-/releases) and place
-it somewhere on your `PATH` (e.g. `~/.local/bin/`).
+### Arch Linux
+
+```bash
+sudo pacman -S isync imapfilter bogofilter gettext
+yay -S goimapnotify
+```
+
+### Debian / Ubuntu
+
+```bash
+sudo apt install isync imapfilter bogofilter gettext-base
+```
+
+goimapnotify is not in the Debian/Ubuntu repos — install it via Go:
+
+```bash
+sudo apt install golang-go
+go install gitlab.com/shackra/goimapnotify/cmd/goimapnotify@latest
+```
+
+The binary lands in `~/go/bin/`. Make sure that is in your `PATH`.
 
 ## Setup
 

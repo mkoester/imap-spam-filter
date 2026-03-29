@@ -3,7 +3,7 @@ Description=IMAP IDLE mail notifier (goimapnotify)
 After=network-online.target
 
 [Service]
-ExecStart=/usr/bin/goimapnotify -wait 10 -conf ${REPO_DIR}/config/goimapnotify/config.json
+ExecStart=${GOIMAPNOTIFY_BIN} -wait 10 -conf ${REPO_DIR}/config/goimapnotify/config.json
 Restart=on-failure
 RestartSec=15s
 
