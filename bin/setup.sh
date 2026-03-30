@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Generates config files from templates and creates required directories.
 # Run once after filling in config.env, and again after any config.env change.
 set -euo pipefail
