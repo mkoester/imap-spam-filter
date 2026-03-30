@@ -158,7 +158,22 @@ Check status:
 ```bash
 systemctl --user status goimapnotify.service
 systemctl --user status bogofilter-learn.timer
-journalctl --user -u goimapnotify.service -f
+```
+
+Follow logs:
+
+```bash
+# IMAP notifier and mbsync
+journalctl --user -u goimapnotify -n 50 -f
+
+# imapfilter (spam queue processing)
+journalctl --user -t imapfilter -n 50 -f
+
+# bogofilter training runs
+journalctl --user -u bogofilter-learn -n 50 -f
+
+# Everything at once (goimapnotify output includes imapfilter via systemd-cat)
+journalctl --user -u goimapnotify -u bogofilter-learn -n 50 -f
 ```
 
 ## Manual operation
