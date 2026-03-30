@@ -137,6 +137,12 @@ filter.
 
 ## Running the services
 
+Allow user services to run without an active login session (run once):
+
+```bash
+sudo loginctl enable-linger $USER
+```
+
 Enable and start the systemd user services:
 
 ```bash
