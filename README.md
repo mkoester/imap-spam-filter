@@ -126,7 +126,7 @@ train on your existing mail:
 
 ```bash
 # Sync all mail (both INBOX and Junk)
-mbsync -c config/mbsync/mbsyncrc "$ACCOUNT_NAME"
+source config.env && mbsync -c config/mbsync/mbsyncrc "$ACCOUNT_NAME"
 
 # Train bogofilter
 bin/bogofilter-learn.sh
