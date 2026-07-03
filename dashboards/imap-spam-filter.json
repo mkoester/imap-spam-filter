@@ -1,0 +1,240 @@
+{
+  "__requires": [
+    { "type": "datasource", "id": "loki",       "name": "Loki",        "version": "1.0.0" },
+    { "type": "panel",      "id": "logs",        "name": "Logs",        "version": "" },
+    { "type": "panel",      "id": "stat",        "name": "Stat",        "version": "" },
+    { "type": "panel",      "id": "timeseries",  "name": "Time series", "version": "" }
+  ],
+  "title": "imap-spam-filter",
+  "uid": "imap-spam-filter",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "host",
+        "type": "query",
+        "label": "Host",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "definition": "label_values({job=\"systemd-journal\", group=\"permanent\"}, host)",
+        "query": "label_values({job=\"systemd-journal\", group=\"permanent\"}, host)",
+        "regex": "/^(?!localhost$).+/",
+        "hide": 0,
+        "refresh": 2,
+        "sort": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Spam moved",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"systemd-journal\", group=\"permanent\", host=\"$host\", unit=\"goimapnotify.service\"} |= \"move-spam: moved to\" [$__range]))"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red",    "value": 20 }
+            ]
+          },
+          "mappings": []
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Classification runs",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"systemd-journal\", group=\"permanent\", host=\"$host\", unit=\"goimapnotify.service\"} |= \"move-spam: done\" [$__range]))"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Training runs",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"systemd-journal\", group=\"permanent\", host=\"$host\", unit=\"bogofilter-learn.service\"} |= \"bogofilter learning run\" [$__range]))"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "purple" }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Errors",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"systemd-journal\", group=\"permanent\", host=\"$host\", unit=~\"goimapnotify.service|bogofilter-learn.service\", level=\"error\"} [$__range]))"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red",   "value": 1 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Activity over time",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "Spam moved",
+          "expr": "sum(count_over_time({job=\"systemd-journal\", group=\"permanent\", host=\"$host\", unit=\"goimapnotify.service\"} |= \"move-spam: moved to\" [$__interval]))"
+        },
+        {
+          "refId": "B",
+          "legendFormat": "Errors",
+          "expr": "sum(count_over_time({job=\"systemd-journal\", group=\"permanent\", host=\"$host\", unit=~\"goimapnotify.service|bogofilter-learn.service\", level=\"error\"} [$__interval]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "barAlignment": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Spam moved" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Errors" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "id": 6,
+      "type": "logs",
+      "title": "goimapnotify",
+      "gridPos": { "x": 0, "y": 12, "w": 24, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"systemd-journal\", group=\"permanent\", host=\"$host\", unit=\"goimapnotify.service\"}"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "enableLogDetails": true
+      }
+    },
+    {
+      "id": 7,
+      "type": "logs",
+      "title": "imapfilter — spam moves",
+      "gridPos": { "x": 0, "y": 20, "w": 24, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"systemd-journal\", group=\"permanent\", host=\"$host\", unit=\"goimapnotify.service\"} |= \"move-spam:\""
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "enableLogDetails": true
+      }
+    },
+    {
+      "id": 8,
+      "type": "logs",
+      "title": "bogofilter-learn",
+      "gridPos": { "x": 0, "y": 28, "w": 24, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"systemd-journal\", group=\"permanent\", host=\"$host\", unit=\"bogofilter-learn.service\"}"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "enableLogDetails": true
+      }
+    }
+  ]
+}
