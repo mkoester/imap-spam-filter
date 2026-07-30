@@ -43,8 +43,7 @@ The binary lands in `~/go/bin/`. Make sure that is in your `PATH`.
 ### Arch Linux
 
 ```bash
-sudo pacman -S isync imapfilter bogofilter gettext
-yay -S goimapnotify
+paru -S isync imapfilter bogofilter gettext goimapnotify
 ```
 
 ### Debian / Ubuntu
