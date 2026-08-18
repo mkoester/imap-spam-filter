@@ -1,29 +1,17 @@
 # imap-spam-filter
 
-A sidecar spam filter for an existing IMAP mail account. It uses
-[bogofilter](https://bogofilter.sourceforge.io/) for statistical spam
-classification and [imapfilter](https://github.com/lefcha/imapfilter) to move
-detected spam to the Junk folder, with
-[goimapnotify](https://gitlab.com/shackra/goimapnotify) driving near-real-time
-processing via IMAP IDLE.
+A sidecar spam filter for an existing IMAP mail account. It uses [bogofilter](https://bogofilter.sourceforge.io/) for statistical spam classification and [imapfilter](https://github.com/lefcha/imapfilter) to move detected spam to the Junk folder, with [goimapnotify](https://gitlab.com/shackra/goimapnotify) driving near-real-time processing via IMAP IDLE.
 
 ## How it works
 
-1. **goimapnotify** watches INBOX via IMAP IDLE. When new mail arrives it
-   triggers `classify-mail.sh`.
-2. **classify-mail.sh** syncs INBOX locally (via `mbsync`), runs each new
-   message through bogofilter, and writes detected spam message IDs to a queue
-   file.
-3. **imapfilter** reads the queue and moves the spam messages to the Junk folder
-   on the server.
-4. **bogofilter-learn.sh** runs daily (via a systemd timer), syncs both INBOX
-   and Junk, and trains bogofilter on their contents — learning ham from INBOX
-   and spam from Junk.
+1. **goimapnotify** watches INBOX via IMAP IDLE. When new mail arrives it triggers `classify-mail.sh`.
+2. **classify-mail.sh** syncs INBOX locally (via `mbsync`), runs each new message through bogofilter, and writes detected spam message IDs to a queue file.
+3. **imapfilter** reads the queue and moves the spam messages to the Junk folder on the server.
+4. **bogofilter-learn.sh** runs daily (via a systemd timer), syncs both INBOX and Junk, and trains bogofilter on their contents — learning ham from INBOX and spam from Junk.
 
 ## Prerequisites
 
-`setup.sh` auto-detects the `goimapnotify` binary via `PATH`, so install it
-by whichever method suits your distribution before running setup.
+`setup.sh` auto-detects the `goimapnotify` binary via `PATH`, so install it by whichever method suits your distribution before running setup.
 
 ### Fedora
 
@@ -111,17 +99,14 @@ bin/setup.sh
 
 This will:
 - Create the data directories under `DATA_DIR`
-- Generate `config/mbsync/mbsyncrc` and `config/goimapnotify/config.json`
-  from their templates
-- Install and enable systemd user units to
-  `~/.config/systemd/user/`
+- Generate `config/mbsync/mbsyncrc` and `config/goimapnotify/config.json` from their templates
+- Install and enable systemd user units to `~/.config/systemd/user/`
 
 Re-run `setup.sh` whenever you change `config.env`.
 
 ### 4. Bootstrap bogofilter
 
-Bogofilter needs an initial corpus to work well. Do a full sync first, then
-train on your existing mail:
+Bogofilter needs an initial corpus to work well. Do a full sync first, then train on your existing mail:
 
 ```bash
 # Sync all mail (both INBOX and Junk)
@@ -131,8 +116,7 @@ source config.env && mbsync -c config/mbsync/mbsyncrc "$ACCOUNT_NAME"
 bin/bogofilter-learn.sh
 ```
 
-Aim for at least a few hundred messages in each folder before relying on the
-filter.
+Aim for at least a few hundred messages in each folder before relying on the filter.
 
 ## Running the services
 
@@ -194,11 +178,7 @@ bin/bogofilter-learn.sh
 
 Bogofilter learns from corrections automatically via `bogofilter-learn.sh`:
 
-- **False positive** (ham moved to Junk): move the message back to INBOX on
-  your mail client. The next training run will relearn it as ham.
-- **False negative** (spam left in INBOX): move the message to Junk. The next
-  training run will relearn it as spam.
+- **False positive** (ham moved to Junk): move the message back to INBOX on your mail client. The next training run will relearn it as ham.
+- **False negative** (spam left in INBOX): move the message to Junk. The next training run will relearn it as spam.
 
-The learn script tracks each message ID in
-`$DATA_DIR/state/mailfilter/learned` and handles reclassification when a
-message switches folders.
+The learn script tracks each message ID in `$DATA_DIR/state/mailfilter/learned` and handles reclassification when a message switches folders.
